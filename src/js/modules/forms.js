@@ -1,14 +1,9 @@
-// import checkNumInputs from "./checkNumInputs";
-
+import {postData} from '../services/requests';
 
 const forms = () => {
     const form = document.querySelectorAll('form'),
         inputs = document.querySelectorAll('input'),
         upload = document.querySelectorAll('[name="upload"]');
-
-/*
-    checkNumInputs('input[name="user_phone"]');
-*/
 
     const message = {
         loading: 'Загрузка...',
@@ -20,36 +15,29 @@ const forms = () => {
     };
 
     const path = {
-      designer: 'assets/server.php',
+        designer: 'assets/server.php',
         question: 'assets/question.php'
-    };
-
-    const postData = async (url, data) => {
-        document.querySelector('.status').textContent = message.loading;
-        let res = await fetch(url, {
-            method: "POST",
-            body: data
-        });
-
-        return await res.text();
     };
 
     const clearInputs = () => {
         inputs.forEach(item => {
             item.value = '';
         });
-        upload.forEach(item =>{
-            item.previousElementSibling.textContent = "Файл не найден";
+        upload.forEach(item => {
+            item.previousElementSibling.textContent = "Файл не выбран";
         });
     };
 
-    upload.forEach(item =>{
-       item.addEventListener('input', () =>{
-           let dots;
-           item.files[0].name.split('.')[0].length > 6 ? dots = '...' : dots = '.';
-           const name = item.files[0].name.split('.')[0].substring(0, 6) + dots + item.files[0].name.split('.')[1];
-           item. previousElementSibling.textContent = name;
-       });
+    upload.forEach(item => {
+        item.addEventListener('input', () => {
+            console.log(item.files[0]);
+            let dots;
+            const arr = item.files[0].name.split('.');
+
+            arr[0].length > 6 ? dots = "..." : dots = '.';
+            const name = arr[0].substring(0, 6) + dots + arr[1];
+            item.previousElementSibling.textContent = name;
+        });
     });
 
     form.forEach(item => {
@@ -60,9 +48,8 @@ const forms = () => {
             statusMessage.classList.add('status');
             item.parentNode.appendChild(statusMessage);
 
-
             item.classList.add('animated', 'fadeOutUp');
-            setTimeout(()=> {
+            setTimeout(() => {
                 item.style.display = 'none';
             }, 400);
 
@@ -71,29 +58,24 @@ const forms = () => {
             statusImg.classList.add('animated', 'fadeInUp');
             statusMessage.appendChild(statusImg);
 
-            let textMessege = document.createElement('div');
-            textMessege.textContent = message.loading;
-            statusMessage.appendChild(textMessege);
+            let textMessage = document.createElement('div');
+            textMessage.textContent = message.loading;
+            statusMessage.appendChild(textMessage);
 
             const formData = new FormData(item);
-            if (item.getAttribute("data-calc") === "end"){
-                for (let key in state){
-                    formData.append(key,state[key]);
-                }
-            }
             let api;
             item.closest('.popup-design') || item.classList.contains('calc_form') ? api = path.designer : api = path.question;
-
+            console.log(api);
 
             postData(api, formData)
                 .then(res => {
                     console.log(res);
                     statusImg.setAttribute('src', message.ok);
-                    textMessege.textContent = message.success;
+                    textMessage.textContent = message.success;
                 })
-                .catch(() =>{
+                .catch(() => {
                     statusImg.setAttribute('src', message.fail);
-                    textMessege.textContent = message.failure
+                    textMessage.textContent = message.failure;
                 })
                 .finally(() => {
                     clearInputs();
